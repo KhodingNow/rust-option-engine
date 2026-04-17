@@ -1,12 +1,10 @@
 
 // PUBLIC API
 
-use crate::types::Spot;
+use crate::types::{Spot, Strike, Rate, Volatility, TimeToMaturity};
 
 /// Cox–Ross–Rubinstein risk-neutral parameters
-
 /// Returns (u, d, p)
-
 pub fn risk_neutral_params(
 
     rate: f64,
@@ -25,7 +23,6 @@ pub fn risk_neutral_params(
 /// Terminal asset prices at maturity (CRR tree)
 ///
 /// Returns N+1 prices for N steps
-
 pub fn terminal_prices(
 
     spot: Spot,
@@ -54,13 +51,12 @@ pub fn terminal_prices(
 // -------------------------
 // Binomial pricing types
 // -------------------------
-
 pub struct BinomialParams {
-    pub spot: f64,
-    pub strike: f64,
-    pub rate: f64,
-    pub volatility: f64,
-    pub maturity: f64,
+    pub spot: Spot,
+    pub strike: Strike,
+    pub rate: Rate,
+    pub volatility: Volatility,
+    pub maturity: TimeToMaturity,
     pub steps: usize,
 }
 
@@ -81,7 +77,6 @@ pub enum OptionType {
 // -------------------------
 // Payoff logic
 // -------------------------
-
 pub fn payoff(price: f64, strike: f64, kind: OptionType) -> f64 {
     match kind {
         OptionType::Call => (price - strike).max(0.0),
@@ -106,6 +101,37 @@ pub fn terminal_payoffs(
 // Pricing entry point
 // -------------------------
 
+
+/// Prices an option using the Cox-Ross-Rubinstein (CRR) binomial model.
+///
+/// Supports both European and American options.
+///
+/// # Arguments
+/// - `params` - Model parameters
+/// - `style` - European or American
+/// - `kind` - Call or Put
+///
+/// # Returns
+/// The option price at time t=0
+///
+/// # Example
+/// ```
+/// use rust_option_engine::{price, OptionStyle, OptionType, BinomialParams};
+/// use rust_option_engine::types::{Spot, Strike, Rate, Volatility, TimeToMaturity};
+///
+/// let params = BinomialParams {
+///     spot: Spot(100.0),
+///     strike: Strike(100.0),
+///     rate: Rate(0.05),
+///     volatility: Volatility(0.2),
+///     maturity: TimeToMaturity(1.0),
+///     steps: 100,
+/// };
+///
+/// let price = price(&params, OptionStyle::European, OptionType::Call);
+///
+/// assert!(price > 0.0);
+/// ```
 pub fn price(
     params: &BinomialParams,
     style: OptionStyle,
@@ -113,16 +139,17 @@ pub fn price(
     
 ) -> f64  {
 
-    let dt = params.maturity / params.steps as f64;
+    let dt = params.maturity.0 / params.steps as f64;
 
-    let (u, d, p) = risk_neutral_params(params.rate, params.volatility, dt);
+    let (u, d, p) = risk_neutral_params(
+	params.rate.0, params.volatility.0, dt,);
 
-    let discount = (-params.rate *dt).exp();
+    let discount = (-params.rate.0 * dt).exp();
 
     // Terminal prices
 
     let prices = terminal_prices(
-        crate::types::Spot(params.spot),
+        params.spot,
 
         u,
         d,
@@ -133,7 +160,7 @@ pub fn price(
     
     let mut values: Vec<f64> = prices
         .iter()
-        .map(|&s| payoff(s, params.strike, kind))
+        .map(|&s| payoff(s, params.strike.0, kind))
         .collect(); 
 
     // Backward induction
@@ -149,7 +176,7 @@ pub fn price(
         if style == OptionStyle::American {
 
             let stock_price = 
-                 params.spot 
+                 params.spot.0 
 
                  * u.powi(i as i32) 
                  * d.powi((step - i) as i32);
@@ -157,10 +184,10 @@ pub fn price(
             let intrinsic = match kind {
 
                 OptionType::Call => 
-                (stock_price - params.strike).max(0.0),
+                	(stock_price - params.strike.0).max(0.0),
 
                 OptionType::Put => 
-                (params.strike - stock_price).max(0.0),
+                (params.strike.0 - stock_price).max(0.0),
                 
             };
 

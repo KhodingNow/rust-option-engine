@@ -1,158 +1,165 @@
-rust-option-engine
-
-A test-driven, invariant-based implementation of Black-Scholes option pricing in Rust.
-
-Overview.
-
-rust-option-engine is an educational and experimental Rust project that explores European option pricing through correctness-first engineering practices.
-
-Rather than focusiing on raw performance or trading strategies, the project emphasizes:
-
-- explicit financial assumptions,
-- mathematically grounded pricing formulas,
-- and tests that encode economic invariants.
-
-The goal is to demonstrate how modern Rust tooling and disciplined testing can be used to reason about financial models safely and incrementally.
-
-Motivation.
-
-Financial models are numerically sensitive and easy to misuse.
-Small implementation errors can silently violate fundamental principles such as:
-
-- intrinsic value bounds,
-- put-call parity,
-- monotonocity with respect to spot,
-- or reasonable bounds on Greeks.
-
-This projects treats such principles as executable specifications, enforced directly through tests.
-
-Engineering Philosophy
-
-Test-Driven Development Influence
-
-The development style of this project is strongly influenced by Ken Youens-Clark's teaching and writing on test-driven development, particularly:
-
-    * Command-Line Rust (2024)
-
- Clark's emphasis on:
-
- - writing tests before implementation,
- - letting failures guide design,
- - and treating tests as documentation
-  
- directly shaped how this codebase evolved.
-
-While these ideas trace back to the foundational work of Kent Beck, the practical approach used here reflects Youens-Clark's modern, Rust-centric intepretation.
-
-Tests as Financial Specifications.
-
-In this project, tests do more that check numerical outputs.
-
-They encode financial invariants, including:
-
-- call price >= intrinsic value,
-- put price >= intrinsic value,
-- put-call parity,
-- stability under small pertubations of spot price,
-- bounded finite-difference Greeks.
-
-This mirrors real-world model validation practices, where correctness is established structurally rather than through a handful of known values.
-
 Implemented Models
 
-Black-Scholes (European Options)
-- Closed-form pricing for calls and puts
-- Standard assumptions;
-     * log-normal underlying
-     * constant volatility
-     * constant risk-free rate
-     * no dividends
-     
-Implementation lives in:
+Black-Scholes (European OPtions)
 
-   src/model/black_scholes.rs
-   
+= Closed-form pricing for European calls and puts
+= Standard assumptions:
+
+    - Log-normal underlying
+    - Constant volatility
+    - Constant risk-free rate
+    - No dividends
+
+Implementation:
+
+    src/model/black_scholes.rs
+
+Binomial Tree (European Options)
+
+    - Discrete-time lattice model
+    - Backward induction pricing
+    - Serves as a bridge toward American options and early exercise logic
+
+Implementation:
+
+    src/model/binomial.rs
+
+
+Getting started.
+
+Clone the repository and run the full test suite:
+
+    git clone https://github.com/<.your-username>/rust-option-engine.git
+    cd rust-option-engine
+    cargo test
+    
+Run the example binary:
+
+    cargo run
+    
+All pricing logic is exercised through tests - a passing test suite is considered the primary success criterion.
 
 Testing Strategy
 
 Unit Tests
+  
+    - Positivity of adoption prices
+    - Behaviour near zero time to maturity
+    - Sanity checks on closd-form solutions
 
-- Positivity of option prices
-- Behaviour near zero time to maturity
-- Basic sanity checks 
- 
+Property-Based Tests (via proptest)
 
-Property-based Tests (via proptest)
+    tests/known_values.rs
 
-- Prices respect intrinsic value over wide input ranges
-- Put-call parity holds within numerical tolerance
-- Prices behave consistently across spot/strike combinations
+Examples include:
 
-Numerical Sensitivity Tests
+    - call_price_is_never_below_intrinsic_value
+    - call_price_respects_intrinsic_value_property
+    - european_put_respects_discounted_lower_bound
+    - put_call_parity_holds
 
-- Central-difference approximation of Delta
-- Bounds on Delta for call options (0 <= DELTA >= 1)
+These tests validate correctness across wide ranges of inputs, not just fixed examples.
 
-Floating-point tolerance (epsilon) are used deliberatley to distinguish numerical noise from genuine violations.
+Numerical Sensitivity & Greeks
 
-Project Structure
+    - Central-difference Delta approximation
+    - Bounds enforced on Delta fall call options
+
+Floating-point tolerances (epsilon) are used deliberately to distinguish numeracal nose from genuine violations of financial principles.
+
+Project Structure:
 
 src/
 ├── lib.rs
 ├── main.rs
-├── types.rs          # Strongly-typed financial primitives
-├── greeks.rs         # Greeks (incremental)
+├── types.rs # Strongly-typed financial primitives
+├── greeks.rs # Greeks (incremental)
 └── model/
-    ├── mod.rs
-    └── black_scholes.rs
+├── mod.rs
+├── black_scholes.rs
+└── binomial.rs
+
 
 tests/
-└── known_values.rs   # Property & invariant tests
+└── known_values.rs # Invariant & property-based tests
+
 
 benches/
-└── pricing.rs        # Criterion benchmarks (optional)
+└── pricing.rs # Criterion benchmarks (optional)
 
 Benchmarks (Optional)
 
-Criterion benchmarks are included to explore performance characteristics of pricing functions once correctness is established.
+Criterion benchmarks are included to explore performance charecteristics after correctness is established.
 
-The emphasis:
+    | Correct first. Fast later.
 
-| correct first, fast later.
+
+What did I learn while Building This Engine?
+
+    - One is that - Financial models benefit from ernomously from executabale invariants, not just equastions in comments
+    - Property-based testing is a natural fir for quantitative finance
+    - Strong typing helps surface conceptual mistakes early (e.g. mixing rates, times, and prices).
+    - Backward induction models (binomial trees) are easier to reason about when tested against structural guarantees rather than prices alone.
+    - Rust's tooling encourages incremental correctness instead of premature optimization
+
+Most importantly, this project reinforced that learning anew quantitative domain is safer and faster when correctness is enforced continuously.
 
 Background.
 
-The author (myself), other than a Post-Graduate Certificate in Econometrix (Wits, 2003-2005, which covered quantitative training in Calculus, Statistics, Micro and Macro Economics, International Trade as modules )  has no other formal or further Reseach training in Quants. 
+I hold a Postgraduate Certificate in Econometrics (Wits 2003-2005), covering calculus, statistics, macro/micro economics, Int Trade.
 
-I am approaching derivatives pricing from a Software correctness and model-validation perspective.
+Also a BA Psychology Honours (Fort Hare 1989-1992).
 
-Although options trading is not my primary professional domain - I am repurposing my Econometrix training I obtained at Wits University in my course using my recently acquired Rust Developer skills in the last two and a half years.
+Outside of that training, this project represents a software-engineering-driven re-entry into derivative pricing, using Rust skills developed over the last 2.5 years.
 
-This project demonstrates how rigorous testing methodologies can be used to learn, validate, and reason about financial models step by step.
+The focus is not trading startegy, but model correctness, validation and reasoning.
 
-References & Further reading.
+Rust Africa-Hackathon.
 
+This project is intended for submission to the RustaceansAfrica Hackathon (4-31 January 2026).
+
+It demonstrates how:
+
+    - disciplined testing,
+    - strong typing,
+    - and explicit assumptions
+
+ can make complex financial models easier to reason about - even when entering a new domain.
+
+References & Further Reading
 Options & Quantitative Finance
 
-- Hull, J. - Options, Futures, and Other Derivatives
-- Natenberg, S. - Option Volatility & Pricing
-- Glasserman, P. - Monte Carlo Methods in Financial Engineering
+Hull, J. — Options, Futures, and Other Derivatives
+
+Natenberg, S. — Option Volatility & Pricing
+
+Glasserman, P. — Monte Carlo Methods in Financial Engineering
 
 Software Engineering & Testing
 
-- Ken Youens-Clark. - Command-Line Rust (2024)
-- Beck, K - Test-Driven Deelopment: (foundational influence).
-- I used DeepSeek / Gpt to debug some elements of the code - prompt these to explain some Mathematical concepts of Black-Scholes I did not understand at first for code veracity and rigour. 
-Disclaimer
+Youens-Clark, K. — Command-Line Rust (2024)
+
+Beck, K. — Test-Driven Development
+
+Large language models (including GPT-based tools) were used selectively to clarify mathematical concepts and validate reasoning, not to generate trading logic.
+
+ 
+
+DISCLAIMER!
+
+This project is for educational purposes only.
+
+It is not intended for production trading, investment decisions, or financial advice.
 
 
-This project is for educational, my education as a Rust /API Security developer only.
-It is not intended for production trading or financial advice.
+WHY THIS PROJECT EXISTS?
 
-I intend to submit it to RustaceansAfrica Hackathon (4-18January 2026).
+It is to explore how disciplined testing strong typing, and explicit assumptions can make complex financial modelseasier to reason about - even when learning a new quantitative domain from the outside.
 
-Why this project exists?
+ 
 
-To explore how disciplined testing, strong typing and explicit assumptions can make complex financial models easier to reason about - even when entering a new domain.
+
+
+
 
 

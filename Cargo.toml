@@ -3,6 +3,16 @@ name = "rust-option-engine"
 version = "0.1.0"
 edition = "2024"
 
+description = "Correctness-focused option pricing engine in Rust (Black-Scholes + Binomial CRR)"
+license = "MIT"
+repository = "https://github.com/KhodingNow/A-RustOption-Trading_Engine-blackScholes-"
+readme = "README.md"
+
+keywords = ["finance", "options", "black-scholes", "quant", "pricing"]
+categories = ["science", "finance"]
+
+authors = ["Thembaletu Mbangcolo"]
+
 [dependencies]
 statrs = "0.16"
 

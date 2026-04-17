@@ -1,4 +1,4 @@
-use rust_option_engine::model::binomial::risk_neutral_params;
+use rust_option_engine::models::binomial::risk_neutral_params;
 
 
 #[test]

@@ -1,8 +1,33 @@
 use statrs::distribution::{Normal, ContinuousCDF};
-use crate::types::*;
+use crate::types::{Spot, Strike, Rate, Volatility, TimeToMaturity};
 
-
-
+/// Computes the Black-Scholes price of a European call option.
+///
+/// # Arguments
+/// - `spot` - Current price of the underlying asset
+/// - `strike` - Strike price
+/// - `rate` - Risk-free interest rate (annualised)
+/// - `vol` - Volatility of the underlying asset
+/// - `time` - Time to maturity in years
+///
+/// # Returns
+/// The option price as `f64`
+///
+/// # Example
+/// ```
+/// use rust_option_engine::call_price;
+/// use rust_option_engine::types::{Spot, Strike, Rate, Volatility, TimeToMaturity};
+///
+/// let price = call_price(
+///     Spot(100.0),
+///     Strike(100.0),
+///     Rate(0.05),
+///     Volatility(0.2),
+///     TimeToMaturity(1.0),
+/// );
+///
+/// assert!(price > 0.0);
+/// ```
 pub fn call_price(
     spot: Spot,
     strike: Strike,
@@ -11,7 +36,7 @@ pub fn call_price(
     time: TimeToMaturity,
     
 ) -> f64 {
-    let normal = Normal::new(0.0, 1.0).unwrap();
+    let normal = Normal::new(0.0, 1.0).expect("Standard normal should always construct");
 
     let s = spot.0;
     let k = strike.0;    
@@ -29,6 +54,13 @@ pub fn call_price(
       
 }
 
+/// Computes the Black-Scholes price of a European put option.
+///
+/// # Arguments
+/// Same as [`call_price`].
+///
+/// # Returns
+/// The option price as `f64`
 pub fn put_price(
     spot: Spot,
     strike: Strike,

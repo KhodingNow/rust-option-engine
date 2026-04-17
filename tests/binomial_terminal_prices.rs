@@ -1,4 +1,4 @@
-use rust_option_engine::model::binomial::terminal_prices;
+use rust_option_engine::models::binomial::terminal_prices;
 use rust_option_engine::types::*;
 
 #[test]

@@ -1,8 +1,8 @@
 // testing a Node, not a tree.
 
 
-use rust_option_engine::model::binomial::payoff;
-use rust_option_engine::model::binomial::OptionType;
+use rust_option_engine::models::binomial::payoff;
+use rust_option_engine::models::binomial::OptionType;
 
 // TEST - call payoff at maturity
 

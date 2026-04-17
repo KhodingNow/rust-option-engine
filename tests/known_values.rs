@@ -1,4 +1,4 @@
-use rust_option_engine::model::black_scholes::{call_price, put_price};
+use rust_option_engine::{call_price, put_price};
 use rust_option_engine::types::*;
 use proptest::prelude::*;
 
