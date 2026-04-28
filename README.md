@@ -1,6 +1,10 @@
+
+[![Crates.io](https://img.shields.io/crates/v/rust-option-engine.svg)](https://crates.io/crates/rust-option-engine)
+
+
 Implemented Models
 
-Black-Scholes (European OPtions)
+Black-Scholes (European Options)
 
 = Closed-form pricing for European calls and puts
 = Standard assumptions:
@@ -45,7 +49,7 @@ Unit Tests
   
     - Positivity of adoption prices
     - Behaviour near zero time to maturity
-    - Sanity checks on closd-form solutions
+    - Sanity checks on closed-form solutions
 
 Property-Based Tests (via proptest)
 
@@ -63,7 +67,7 @@ These tests validate correctness across wide ranges of inputs, not just fixed ex
 Numerical Sensitivity & Greeks
 
     - Central-difference Delta approximation
-    - Bounds enforced on Delta fall call options
+    - Bounds enforced on Delta for call options
 
 Floating-point tolerances (epsilon) are used deliberately to distinguish numeracal nose from genuine violations of financial principles.
 
@@ -96,13 +100,13 @@ Criterion benchmarks are included to explore performance charecteristics after c
 
 What did I learn while Building This Engine?
 
-    - One is that - Financial models benefit from ernomously from executabale invariants, not just equastions in comments
-    - Property-based testing is a natural fir for quantitative finance
+    - One is that - Financial models benefit from ernomously from executabale invariants, not just equations in comments
+    - Property-based testing is a natural fit for quantitative finance
     - Strong typing helps surface conceptual mistakes early (e.g. mixing rates, times, and prices).
     - Backward induction models (binomial trees) are easier to reason about when tested against structural guarantees rather than prices alone.
     - Rust's tooling encourages incremental correctness instead of premature optimization
 
-Most importantly, this project reinforced that learning anew quantitative domain is safer and faster when correctness is enforced continuously.
+Most importantly, this project reinforced that learning a new quantitative domain is safer and faster when correctness is enforced continuously.
 
 Background.
 
