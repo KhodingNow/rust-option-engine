@@ -69,7 +69,7 @@ Numerical Sensitivity & Greeks
     - Central-difference Delta approximation
     - Bounds enforced on Delta for call options
 
-Floating-point tolerances (epsilon) are used deliberately to distinguish numeracal nose from genuine violations of financial principles.
+Floating-point tolerances (epsilon) are used deliberately to distinguish numerical nose from genuine violations of financial principles.
 
 Project Structure:
 
@@ -116,7 +116,7 @@ Also a BA Psychology Honours (Fort Hare 1989-1992).
 
 Outside of that training, this project represents a software-engineering-driven re-entry into derivative pricing, using Rust skills developed over the last 2.5 years.
 
-The focus is not trading startegy, but model correctness, validation and reasoning.
+The focus is not trading strategy, but model correctness, validation and reasoning.
 
 Rust Africa-Hackathon.
 
@@ -158,7 +158,7 @@ It is not intended for production trading, investment decisions, or financial ad
 
 WHY THIS PROJECT EXISTS?
 
-It is to explore how disciplined testing strong typing, and explicit assumptions can make complex financial modelseasier to reason about - even when learning a new quantitative domain from the outside.
+It is to explore how disciplined testing strong typing, and explicit assumptions can make complex financial models easier to reason about - even when learning a new quantitative domain from the outside.
 
  
 
