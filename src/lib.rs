@@ -30,13 +30,61 @@
 //! assert!(delta > 0.0);
 //! ```
 
-pub mod models;
 pub mod greeks;
+pub mod models;
 pub mod types;
 
 pub use greeks::*;
-pub use models::black_scholes::*;
 pub use models::binomial::*;
+pub use models::black_scholes::*;
 
+#[cfg(feature = "python")]
+use pyo3::prelude::*;
 
+/// Calculate the Black-Scholes European call option price.
+#[cfg(feature = "python")]
+#[pyfunction(name = "call_price")]
+fn call_price_py(spot: f64, strike: f64, rate: f64, volatility: f64, time_to_maturity: f64) -> f64 {
+    call_price(
+        types::Spot(spot),
+        types::Strike(strike),
+        types::Rate(rate),
+        types::Volatility(volatility),
+        types::TimeToMaturity(time_to_maturity),
+    )
+}
 
+/// Calculate the Black-Scholes European put option price.
+#[cfg(feature = "python")]
+#[pyfunction(name = "put_price")]
+fn put_price_py(spot: f64, strike: f64, rate: f64, volatility: f64, time_to_maturity: f64) -> f64 {
+    put_price(
+        types::Spot(spot),
+        types::Strike(strike),
+        types::Rate(rate),
+        types::Volatility(volatility),
+        types::TimeToMaturity(time_to_maturity),
+    )
+}
+
+/// Calculate the Black-Scholes call option delta.
+#[cfg(feature = "python")]
+#[pyfunction(name = "delta_call")]
+fn delta_call_py(spot: f64, strike: f64, rate: f64, volatility: f64, time_to_maturity: f64) -> f64 {
+    delta_call(
+        types::Spot(spot),
+        types::Strike(strike),
+        types::Rate(rate),
+        types::Volatility(volatility),
+        types::TimeToMaturity(time_to_maturity),
+    )
+}
+
+#[cfg(feature = "python")]
+#[pymodule]
+fn rust_option_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(call_price_py, m)?)?;
+    m.add_function(wrap_pyfunction!(put_price_py, m)?)?;
+    m.add_function(wrap_pyfunction!(delta_call_py, m)?)?;
+    Ok(())
+}
