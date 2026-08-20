@@ -44,6 +44,10 @@ pub fn call_price(
     let sigma = vol.0;
     let t = time.0;
 
+    if t == 0.0 {
+        return (s - k).max(0.0);
+    }
+
     let d1 = ((s / k).ln() + (r + 0.5 * sigma * sigma) * t) / (sigma * t.sqrt());
 
     let d2 = d1 - sigma * t.sqrt();
@@ -113,17 +117,16 @@ mod tests {
 }
 
 #[test]
-
-fn zero_time_to_maturity() {
+fn call_price_at_maturity_equals_intrinsic_value() {
     let price = call_price(
         Spot(100.0),
         Strike(100.0),
         Rate(0.05),
         Volatility(0.2),
-        TimeToMaturity(0.0001),
+        TimeToMaturity(0.0),
     );
 
-    assert!(price >= 0.0);
+    assert_eq!(price, 0.0);
     
 }
 
@@ -142,7 +145,7 @@ fn call_price_is_never_below_intrinsic_value() {
         
     );
     
-    let intrinsic_value = (strike.0 - spot.0).max(0.0);
+    let intrinsic_value = (spot.0 - strike.0).max(0.0);
     
     assert!(
         price >= intrinsic_value,
