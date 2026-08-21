@@ -13,6 +13,17 @@ def test_call_price():
 
     assert abs(price - 10.450583572185565) < 1e-10
 
+def test_call_price_at_maturity():
+    price = roe.call_price(
+        100.0,
+        100.0,
+        0.05,
+        0.2,
+        0.0,
+
+    )
+
+    assert price == 0.0
 
 def test_put_price():
     price = roe.put_price(
