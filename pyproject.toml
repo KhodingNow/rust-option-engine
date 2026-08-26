@@ -1,0 +1,13 @@
+[build-system]
+requires = ["maturin>=1.14,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "rust-option-engine"
+version = "0.1.0"
+description = "Correctness-focused option pricing engine in Rust"
+requires-python = ">=3.12"
+
+[tool.maturin]
+features = ["python"]
+module-name = "rust_option_engine"

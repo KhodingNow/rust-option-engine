@@ -1,5 +1,5 @@
-use statrs::distribution::{Normal, ContinuousCDF};
-use crate::types::{Spot, Strike, Rate, Volatility, TimeToMaturity};
+use crate::types::{Rate, Spot, Strike, TimeToMaturity, Volatility};
+use statrs::distribution::{ContinuousCDF, Normal};
 
 /// Computes the Black-Scholes price of a European call option.
 ///
@@ -34,24 +34,40 @@ pub fn call_price(
     rate: Rate,
     vol: Volatility,
     time: TimeToMaturity,
-    
 ) -> f64 {
     let normal = Normal::new(0.0, 1.0).expect("Standard normal should always construct");
 
     let s = spot.0;
-    let k = strike.0;    
+    let k = strike.0;
     let r = rate.0;
     let sigma = vol.0;
     let t = time.0;
+
+    if sigma <= 0.0 {
+        panic!("Volatility must be greater than zero");
+    }
+
+    if t < 0.0 {
+        panic!("time to maturity must not be negative");
+    }
+
+    if s <= 0.0 {
+        panic!("spot price must be greater than zero");
+    }
+
+    if k <= 0.0 {
+        panic!("strike price must be greater than zero");
+    }
+
+    if t == 0.0 {
+        return (s - k).max(0.0);
+    }
 
     let d1 = ((s / k).ln() + (r + 0.5 * sigma * sigma) * t) / (sigma * t.sqrt());
 
     let d2 = d1 - sigma * t.sqrt();
 
-    
     s * normal.cdf(d1) - k * (-r * t).exp() * normal.cdf(d2)
-
-      
 }
 
 /// Computes the Black-Scholes price of a European put option.
@@ -67,7 +83,6 @@ pub fn put_price(
     rate: Rate,
     vol: Volatility,
     time: TimeToMaturity,
-    
 ) -> f64 {
     let normal = Normal::new(0.0, 1.0).unwrap();
 
@@ -77,82 +92,80 @@ pub fn put_price(
     let sigma = vol.0;
     let t = time.0;
 
-    let d1 = (( s / k).ln() + (r + 0.5 * sigma * sigma) *t) / (sigma * t.sqrt());
+    if sigma <= 0.0 {
+        panic!("Volatility must be greater than zero");
+    }
+
+    if t < 0.0 {
+        panic!("time to maturity must not be negative");
+    }
+
+    if s <= 0.0 {
+        panic!("spot price must be greater than zero");
+    }
+    if k <= 0.0 {
+        panic!("strike price must be greater than zero");
+    }
+    if t == 0.0 {
+        return (k - s).max(0.0);
+    }
+
+    let d1 = ((s / k).ln() + (r + 0.5 * sigma * sigma) * t) / (sigma * t.sqrt());
 
     let d2 = d1 - sigma * t.sqrt();
 
     k * (-r * t).exp() * normal.cdf(-d2) - s * normal.cdf(-d1)
-
-
-    // canonical Black-Scholes formula: P = Ke*(-rt) N(-d2) - SN(-d1) 
 }
 
-
 #[cfg(test)]
-
 mod tests {
     use super::*;
     use crate::types::*;
 
     #[test]
     fn call_price_ispositive() {
-
         let price = call_price(
             Spot(100.0),
             Strike(100.0),
             Rate(0.01),
             Volatility(0.02),
-            TimeToMaturity(1.0),           
-            
+            TimeToMaturity(1.0),
         );
-        
+
         assert!(price > 0.0);
-         
     }
-    
-}
 
-#[test]
+    #[test]
+    fn call_price_at_maturity_equals_intrinsic_value() {
+        let price = call_price(
+            Spot(100.0),
+            Strike(100.0),
+            Rate(0.05),
+            Volatility(0.2),
+            TimeToMaturity(0.0),
+        );
 
-fn zero_time_to_maturity() {
-    let price = call_price(
-        Spot(100.0),
-        Strike(100.0),
-        Rate(0.05),
-        Volatility(0.2),
-        TimeToMaturity(0.0001),
-    );
+        assert_eq!(price, 0.0);
+    }
 
-    assert!(price >= 0.0);
-    
-}
+    #[test]
+    fn call_price_is_never_below_intrinsic_value() {
+        let spot = Spot(120.0);
+        let strike = Strike(100.0);
 
+        let price = call_price(
+            spot,
+            strike,
+            Rate(0.01),
+            Volatility(0.2),
+            TimeToMaturity(1.0),
+        );
 
-#[test]
-fn call_price_is_never_below_intrinsic_value() {
-    let spot = Spot(120.0);
-    let strike = Strike(100.0);
-    
-    let price = call_price(
-        spot,
-        strike,
-        Rate(0.01),
-        Volatility(0.2),
-        TimeToMaturity(1.0),
-        
-    );
-    
-    let intrinsic_value = (strike.0 - spot.0).max(0.0);
-    
-    assert!(
-        price >= intrinsic_value,
+        let intrinsic_value = (spot.0 - strike.0).max(0.0);
 
-        "price {price} < intrinsic value {intrinsic_value }"
-
-
-); 
-       
-   
-
-     
+        assert!(
+            price >= intrinsic_value,
+            "price {price} < intrinsic value {intrinsic_value}"
+        );
+    }
 }
