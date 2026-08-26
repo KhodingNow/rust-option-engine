@@ -207,7 +207,7 @@ proptest! {
         let delta = (price_up - price_down) / (2.0 * epsilon);
 
         prop_assert!(
-            delta >= -1e-6 && delta <= 1.0 + 1e-6,
+            (-1e-6..=1.0 + 1e-6).contains(&delta),
 
             "call delta out of bounds: delta={delta}"
         );

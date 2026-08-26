@@ -19,18 +19,15 @@ fn crr_terminal_prices_are_correct_for_two_step() {
     // k=1: 100 * u * d
     // k=0: 100 * d^2
 
-    let expected = vec![
+    let expected = [
         100.0 * u * u,
         100.0 * u * d,
         100.0 * d * d,
-        
     ];
 
     for (p, e) in prices.iter().zip(expected.iter()) {
         assert!(
-
-            (p-e).abs() < 1e-10,
-            
+            (p - e).abs() < 1e-10,
             "price {p} != expected {e}"
         );
     }
