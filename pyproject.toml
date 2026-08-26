@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "rust-option-engine"
-version = "0.1.0"
+version = "0.2.0"
 description = "Correctness-focused option pricing engine in Rust"
 requires-python = ">=3.12"
 
