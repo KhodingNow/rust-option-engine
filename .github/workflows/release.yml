@@ -1,0 +1,84 @@
+name: Publish Python package
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  test:
+    name: Test Rust and Python
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install maturin and pytest
+        run: python -m pip install "maturin>=1.14,<2.0" pytest
+
+      - name: Run Rust tests
+        run: cargo test
+
+      - name: Build and install Python package
+        run: maturin develop --release
+
+      - name: Run Python tests
+        run: python -m pytest python_tests
+
+  build:
+    name: Build Python wheel
+    needs: test
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install maturin
+        run: python -m pip install "maturin>=1.14,<2.0"
+
+      - name: Build wheel
+        run: maturin build --release
+
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-wheel
+          path: target/wheels/*.whl
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment: pypi
+
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download wheel
+        uses: actions/download-artifact@v4
+        with:
+          name: python-wheel
+          path: dist
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
